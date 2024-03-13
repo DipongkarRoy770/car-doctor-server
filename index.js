@@ -26,6 +26,7 @@ async function run() {
         await client.connect();
 
         const carConnection = client.db('carManager').collection('cars ')
+        const carBooking = client.db('carbook').collection('carData')
 
         app.get('/cars', async (req, res) => {
             const query = carConnection.find()
@@ -35,15 +36,17 @@ async function run() {
         app.get('/cars/:id', async (req, res) => {
             const id = req.params.id
             const query = { _id: new ObjectId(id) }
-            const result = await carConnection.findOne(query)
+            const options = {title:1 ,price:1 ,cars_id:1 ,img:1}
+            const result = await carConnection.findOne(query ,options)
             res.send(result)
         })
         app.post('/cars', async (req, res) => {
             const user = req.body;
             const result = await carConnection.insertOne(user)
             res.send(result)
-        })
-        app.patch('/cars/:id', async (req, res) => {
+        }) 
+        
+        app.put('/cars/:id', async (req, res) => {
             const id = req.params.id;
             const user = req.body;
             const options = { upsert: true }
@@ -60,6 +63,49 @@ async function run() {
             const id = req.params.id;
             const filter = { _id: new ObjectId(id) }
             const result = await carConnection.deleteOne(filter)
+            res.send(result)
+        })
+        //booking data:
+
+        app.post('/booking', async (req, res) => {
+            const user = req.body;
+            const result = await carBooking.insertOne(user)
+            res.send(result)
+        }) 
+        app.get('/booking', async (req, res) => {
+            console.log(req.query.email)
+            let query = {}
+            if(req.query?.email){
+                query={email: req.query.email}
+            }
+            const result = await carBooking.find(query).toArray()
+            res.send(result)
+        })
+        app.get('/booking/:id' ,async(req,res)=>{
+            const id = req.params.id ;
+            const query = {_id: new ObjectId(id)}
+            const result = await carBooking.findOne(query)
+            res.send(result)
+        })
+        app.patch('/booking/:id', async (req, res) => {
+            const id = req.params.id;
+            console.log(id)
+            const filter= {_id: new ObjectId(id)}
+            const updateBooking = req.body
+            console.log(updateBooking)
+            const updateDoc={
+                $set:{
+                    status:updateBooking.status
+                }
+            }
+            const  result =await carBooking.updateOne(filter,updateDoc)
+            res.send(result)
+        })
+        app.delete('/booking/:id', async(req ,res)=>{
+            const id = req.params.id
+            console.log(id)
+            const query = {_id:new ObjectId(id)}
+            const result = await carBooking.deleteOne(query)
             res.send(result)
         })
         // Send a ping to confirm a successful connection
