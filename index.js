@@ -29,8 +29,18 @@ async function run() {
         const carBooking = client.db('carbook').collection('carData')
 
         app.get('/cars', async (req, res) => {
-            const query = carConnection.find()
-            const result = await query.toArray()
+           // let query = {}
+            const sort = req.query.sort;
+            const search= req.query.search ;
+            console.log(search)
+            const query = {title:{$regex:search ,$options:'i'}}
+            const options={
+                
+                    sort: { price:sort==='asc'?1:-1 }
+                
+            }
+            const cursor = carConnection.find(query ,options)
+            const result = await cursor.toArray()
             res.send(result)
         })
         app.get('/cars/:id', async (req, res) => {
@@ -40,31 +50,31 @@ async function run() {
             const result = await carConnection.findOne(query ,options)
             res.send(result)
         })
-        app.post('/cars', async (req, res) => {
-            const user = req.body;
-            const result = await carConnection.insertOne(user)
-            res.send(result)
-        }) 
+        // app.post('/cars', async (req, res) => {
+        //     const user = req.body;
+        //     const result = await carConnection.insertOne(user)
+        //     res.send(result)
+        // }) 
         
-        app.put('/cars/:id', async (req, res) => {
-            const id = req.params.id;
-            const user = req.body;
-            const options = { upsert: true }
-            const filter = { _id: new ObjectId(id) }
-            const updateDoc = {
-                $set: {
-                    ...user
-                }
-            }
-            const result = await carConnection.updateOne(filter, updateDoc, options)
-            res.send(result)
-        })
-        app.delete('/cars/:id', async (req, res) => {
-            const id = req.params.id;
-            const filter = { _id: new ObjectId(id) }
-            const result = await carConnection.deleteOne(filter)
-            res.send(result)
-        })
+        // app.put('/cars/:id', async (req, res) => {
+        //     const id = req.params.id;
+        //     const user = req.body;
+        //     const options = { upsert: true }
+        //     const filter = { _id: new ObjectId(id) }
+        //     const updateDoc = {
+        //         $set: {
+        //             ...user
+        //         }
+        //     }
+        //     const result = await carConnection.updateOne(filter, updateDoc, options)
+        //     res.send(result)
+        // })
+        // app.delete('/cars/:id', async (req, res) => {
+        //     const id = req.params.id;
+        //     const filter = { _id: new ObjectId(id) }
+        //     const result = await carConnection.deleteOne(filter)
+        //     res.send(result)
+        // })
         //booking data:
 
         app.post('/booking', async (req, res) => {
